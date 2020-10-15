@@ -1,0 +1,138 @@
+#importing libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+#import dataset
+data=pd.read_csv('Admission_predict.csv')
+
+data.head() # it shows the first values of the dataset
+data.isna().sum() # it shows the  any missing or null values.
+data.info()  #information about the dataset
+data.describe()#description about the datset
+
+
+#deletion of serial no because there is no use in the dataset
+del data['Serial No.']
+#extracting x(independent ) and y (dependent )values
+x=data.iloc[:,:-1].values
+y=data.iloc[:,-1].values
+x 
+y
+#visualization of data
+data.hist(bins=200,figsize=(20,20),color='blue') #using the histogram to visualize the data
+sns.pairplot(data)
+
+#we are splitting x and y into training set and the test set
+from sklearn.model_selection import train_test_split as tts
+x_train,x_test,y_train,y_test=tts(x,y,test_size=0.2,random_state=0)
+#to test the train and test data
+x_train
+x_test
+y_train
+y_test
+
+#creating and training the linear regressiom\n
+from sklearn.linear_model import LinearRegression
+linear=LinearRegression()
+linear.fit(x_train,y_train)
+
+y_pred=linear.predict(x_test)
+y_pred
+
+
+Y_compare_linear = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
+Y_compare_linear.head() #displaying the comparision btween actual and predicted values of MEDV
+
+
+#printing the r^2 score and the errors of our trained model
+from sklearn.metrics import mean_absolute_error,mean_squared_error,r2_score
+print(mean_absolute_error(y_test,y_pred))
+mse=mean_squared_error(y_test,y_pred)
+print(mse)
+print(r2_score(y_test,y_pred))
+np.sqrt(mse)
+
+r2=[]
+for i in range(5):
+    new_x = x[:, i].reshape(-1, 1)
+    
+    r2=[]
+for i in range(5):
+    new_x = x[:, i].reshape(-1, 1)
+    x_train,x_test,y_train,y_test = tts(new_x,y,test_size = 0.2,random_state =0)
+    linear.fit(x_train, y_train)
+    y_pred = linear.predict(x_test)
+    r2.append(r2_score(y_test, y_pred))
+    plt.scatter(x_test, y_test, color = 'red')
+    plt.plot(x_test, linear.predict(x_test), color = 'blue')
+    plt.title('Chance of Admity vs GRE Score (Training set)')
+    plt.xlabel(' GRE Score')
+    plt.ylabel('Chance of Admity')
+    plt.show()
+    
+    corr=data.corr()
+corr.style.background_gradient(cmap="inferno")
+
+#heatmap visualize the data
+plt.figure(figsize=(15,15))
+sns.heatmap(data.corr(),annot=True,cmap='inferno',mask=np.triu(data.corr(),k=1))
+#importing statsmodel 
+import statsmodels.api as sm
+x = np.append(arr = np.ones((500, 1)).astype(int), values = x, axis = 1)
+x_opt = x[:, [0, 1, 2, 3, 4, 5, 6, 7]]
+regressor_OLS = sm.OLS(endog = y, exog = x_opt).fit()
+regressor_OLS.summary()
+
+# Standard Errors assume that the covariance matrix of the errors is correctly specified.
+# The condition number is large, 1.3e+04. This might indicate that there are
+#strong multicollinearity or other numerical problems.
+
+#i am deleting the 4 for not  satisfying the P>|t|
+x_opt = x[:, [0, 1,2, 3,5, 6, 7]]
+regressor_OLS = sm.OLS(endog = y, exog = x_opt).fit()
+regressor_OLS.summary()
+
+#i am deleting the 3 for not satisfying the P>|t|
+x_opt = x[:, [0, 1, 2, 5, 6, 7]]
+regressor_OLS = sm.OLS(endog = y, exog = x_opt).fit()
+regressor_OLS.summary()
+#i am deleting the 2 for not satisfying the P>|t|
+x_opt = x[:, [0, 1,5, 6, 7]]
+regressor_OLS = sm.OLS(endog = y, exog = x_opt).fit()
+regressor_OLS.summary()
+#then o,1,5,6,7 are st
+x_opt 
+
+# splitting the x_opt and y into training and test set for our MLR model
+x_train,x_test,y_train,y_test = tts(x_opt,y,test_size = 0.2,random_state=0)
+
+# train my MLR model
+opt_reg = LinearRegression()
+opt_reg.fit(x_train,y_train)
+
+y_pr = opt_reg.predict(x_test)
+#predicting accurancy score using the mae,mse and R2 score
+print(mean_absolute_error(y_test,y_pred))
+mse = mean_squared_error(y_test,y_pred)
+print(mse)
+print(r2_score(y_test,y_pred))
+print(np.sqrt(mse))
+
+from mpl_toolkits import mplot3d
+# to plot a 3D plot we create a 3D suplot on a matplotlib figure
+ax = plt.figure().add_subplot(projection = '3d')
+ax.scatter3D(x_test[:,0],x_test[:,2],y_test,c='red')
+ax.plot3D(x_test[:,0],x_test[:,2],y_pred,c='blue')
+ax.set_xlabel('	TOEFL Score')
+ax.set_ylabel('CGPA')
+ax.set_zlabel('Chance of Admit')
+plt.show()
+
+
+
+
+
+
+
